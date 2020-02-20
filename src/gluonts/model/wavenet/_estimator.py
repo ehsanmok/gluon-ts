@@ -285,7 +285,7 @@ class WaveNetEstimator(GluonEstimator):
             transform=transformation,
             batch_size=self.trainer.batch_size,
             num_batches_per_epoch=self.trainer.num_batches_per_epoch,
-            ctx=self.trainer.ctx,
+            ctx=self.trainer.ctx[0],
         )
 
         validation_data_loader = None
@@ -294,13 +294,13 @@ class WaveNetEstimator(GluonEstimator):
                 dataset=validation_data,
                 transform=transformation,
                 batch_size=self.trainer.batch_size,
-                ctx=self.trainer.ctx,
+                ctx=self.trainer.ctx[0],
                 dtype=self.dtype,
             )
 
         # ensure that the training network is created within the same MXNet
         # context as the one that will be used during training
-        with self.trainer.ctx:
+        with self.trainer.ctx[0]:
             params = self._get_wavenet_args(bin_centers)
             params.update(pred_length=self.train_window_length)
             trained_net = WaveNet(**params)
@@ -314,7 +314,7 @@ class WaveNetEstimator(GluonEstimator):
 
         # ensure that the prediction network is created within the same MXNet
         # context as the one that was used during training
-        with self.trainer.ctx:
+        with self.trainer.ctx[0]:
             return self.create_predictor(
                 transformation, trained_net, bin_centers
             )

@@ -13,6 +13,7 @@
 
 # Third-party imports
 import pytest
+import mxnet as mx
 
 # First-party imports
 from gluonts.dataset.artificial import default_synthetic
@@ -32,13 +33,18 @@ cardinality = int(dataset_info.metadata.feat_static_cat[0].cardinality)
 batch_size = 32
 context_length = 2
 epochs = 1
+ctx = (
+    [mx.gpu(i) for i in range(mx.context.num_gpus())]
+    if mx.context.num_gpus()
+    else [mx.cpu()]
+)
 
 
 def simple_feedforward_estimator(hybridize: bool = True, batches_per_epoch=1):
     return (
         SimpleFeedForwardEstimator,
         dict(
-            ctx="cpu",
+            ctx=ctx,
             epochs=epochs,
             learning_rate=1e-2,
             batch_size=batch_size,
@@ -57,7 +63,7 @@ def deepar_estimator(hybridize: bool = False, batches_per_epoch=1):
     return (
         DeepAREstimator,
         dict(
-            ctx="cpu",
+            ctx=ctx,
             epochs=epochs,
             learning_rate=1e-2,
             batch_size=batch_size,
@@ -77,7 +83,7 @@ def deep_factor_estimator(hybridize: bool = True, batches_per_epoch=1):
     return (
         DeepFactorEstimator,
         dict(
-            ctx="cpu",
+            ctx=ctx,
             epochs=epochs,
             learning_rate=1e-2,
             hybridize=hybridize,
@@ -95,7 +101,7 @@ def gp_estimator(hybridize: bool = True, batches_per_epoch=1):
     return (
         GaussianProcessEstimator,
         dict(
-            ctx="cpu",
+            ctx=ctx,
             epochs=epochs,
             learning_rate=1e-2,
             hybridize=hybridize,
@@ -113,7 +119,7 @@ def wavenet_estimator(hybridize: bool = False, batches_per_epoch=1):
     return (
         WaveNetEstimator,
         dict(
-            ctx="cpu",
+            ctx=ctx,
             epochs=epochs,
             learning_rate=1e-2,
             hybridize=hybridize,
@@ -130,7 +136,7 @@ def transformer_estimator(hybridize: bool = False, batches_per_epoch=1):
     return (
         TransformerEstimator,
         dict(
-            ctx="cpu",
+            ctx=ctx,
             epochs=epochs,
             learning_rate=1e-2,
             batch_size=batch_size,
@@ -151,7 +157,7 @@ def n_beats_generic_estimator(hybridize: bool = False, batches_per_epoch=1):
     return (
         NBEATSEstimator,
         dict(
-            ctx="cpu",
+            ctx=ctx,
             epochs=epochs,
             batch_size=batch_size,
             hybridize=hybridize,
@@ -170,7 +176,7 @@ def n_beats_generic_ensemble_estimator(
     return (
         NBEATSEnsembleEstimator,
         dict(
-            ctx="cpu",
+            ctx=ctx,
             epochs=epochs,
             batch_size=batch_size,
             hybridize=hybridize,
@@ -192,7 +198,7 @@ def n_beats_interpretable_estimator(
     return (
         NBEATSEstimator,
         dict(
-            ctx="cpu",
+            ctx=ctx,
             epochs=epochs,
             batch_size=batch_size,
             hybridize=hybridize,

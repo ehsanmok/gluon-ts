@@ -20,7 +20,7 @@ import re
 from collections import OrderedDict
 from functools import singledispatch
 from pydoc import locate
-from typing import Any, Type, TypeVar, Union
+from typing import Any, Type, TypeVar, Union, List, Optional
 
 # Third-party imports
 import mxnet as mx
@@ -36,6 +36,8 @@ from gluonts.monkey_patch import monkey_patch_property_metaclass  # noqa: F401
 from . import fqname_for
 
 logger = logging.getLogger(__name__)
+
+ContextType = Optional[Union[mx.Context, List[mx.Context]]]
 
 A = TypeVar("A")
 
@@ -504,6 +506,21 @@ def get_mxnet_context(gpu_number=0) -> mx.Context:
     else:
         logger.info("Using CPU")
         return mx.context.cpu()
+
+
+def normalize_ctx(
+    ctx: Optional[Union[str, mx.Context, List[mx.Context]]]
+) -> List[mx.Context]:
+    if isinstance(ctx, str):
+        return [mx.Context(ctx)]
+    if ctx is not None:
+        return [ctx] if not isinstance(ctx, list) else ctx
+    else:
+        return (
+            [mx.gpu(i) for i in range(mx.context.num_gpus())]
+            if mx.context.num_gpus()
+            else [mx.cpu()]
+        )
 
 
 def check_gpu_support() -> bool:

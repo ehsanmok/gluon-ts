@@ -21,7 +21,7 @@ import mxnet as mx
 import numpy as np
 
 # First-party imports
-from gluonts.core.component import DType
+from gluonts.core.component import DType, ContextType, normalize_ctx
 from gluonts.dataset.common import DataEntry, Dataset
 from gluonts.transform import Transformation
 
@@ -56,11 +56,11 @@ class DataLoader(Iterable[DataEntry]):
         transform: Transformation,
         is_train: bool,
         batch_size: int,
-        ctx: mx.Context,
+        ctx: ContextType,
         dtype: DType = np.float32,
     ) -> None:
         self.batch_size = batch_size
-        self.ctx = ctx
+        self.ctx = normalize_ctx(ctx)
         self.dtype = dtype
         self.is_train = is_train
         self.dataset = dataset
@@ -80,7 +80,11 @@ class DataLoader(Iterable[DataEntry]):
             data = np.asarray(xs)
             if data.dtype.kind == "f":
                 data = data.astype(self.dtype)
-            return mx.nd.array(data, dtype=data.dtype, ctx=self.ctx)
+            return mx.nd.array(
+                data,
+                dtype=data.dtype,
+                ctx=self.ctx[0] if isinstance(self.ctx, list) else self.ctx,
+            )
 
         if isinstance(xs[0], mx.nd.NDArray):
             return mx.nd.stack(*xs)
@@ -126,7 +130,7 @@ class TrainDataLoader(DataLoader):
         dataset: Dataset,
         transform: Transformation,
         batch_size: int,
-        ctx: mx.Context,
+        ctx: ContextType,
         num_batches_per_epoch: int,
         dtype: DType = np.float32,
         shuffle_for_training: bool = True,
@@ -169,7 +173,7 @@ class ValidationDataLoader(DataLoader):
         *,
         transform: Transformation,
         batch_size: int,
-        ctx: mx.Context,
+        ctx: ContextType,
         dtype: DType = np.float32,
     ) -> None:
         super().__init__(
@@ -189,7 +193,7 @@ class InferenceDataLoader(DataLoader):
         *,
         transform: Transformation,
         batch_size: int,
-        ctx: mx.Context,
+        ctx: ContextType,
         dtype: DType = np.float32,
     ) -> None:
         super().__init__(
