@@ -80,11 +80,7 @@ class DataLoader(Iterable[DataEntry]):
             data = np.asarray(xs)
             if data.dtype.kind == "f":
                 data = data.astype(self.dtype)
-            return mx.nd.array(
-                data,
-                dtype=data.dtype,
-                ctx=self.ctx[0] if isinstance(self.ctx, list) else self.ctx,
-            )
+            return mx.nd.array(data, dtype=data.dtype, ctx=self.ctx[0])
 
         if isinstance(xs[0], mx.nd.NDArray):
             return mx.nd.stack(*xs)
