@@ -11,6 +11,9 @@
 # express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
+# Standard library imports
+import os
+
 # Third-party imports
 import pytest
 import mxnet as mx
@@ -34,9 +37,9 @@ batch_size = 32
 context_length = 2
 epochs = 1
 ctx = (
-    [mx.gpu(i) for i in range(mx.context.num_gpus())]
+    [mx.gpu(i) for i in range(min(2, mx.context.num_gpus()))]
     if mx.context.num_gpus()
-    else [mx.cpu()]
+    else [mx.cpu(i) for i in range(min(2, os.cpu_count()))]
 )
 
 
